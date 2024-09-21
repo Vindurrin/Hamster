@@ -2,11 +2,14 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { AppError } = require('../utils/errorHandler');
+const { sendEmail } = require('./emailService');
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
+
+  
 };
 
 const register = async (username, email, password) => {
@@ -23,7 +26,11 @@ const register = async (username, email, password) => {
     verificationToken,
   });
 
-  // TODO: Send verification email
+  await sendEmail({
+    email: user.email,
+    subject: 'Verify your email',
+    html: `Click <a href="${process.env.BASE_URL}/verify-email/${verificationToken}">here</a> to verify your email.`,
+  });
 
   return { user, token: generateToken(user._id) };
 };
@@ -68,10 +75,22 @@ const forgotPassword = async (email) => {
   user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   await user.save();
 
-  // TODO: Send password reset email
+  await sendEmail({
+    email: user.email,
+    subject: 'Password Reset',
+    html: `Click <a href="${process.env.BASE_URL}/reset-password/${resetToken}">here</a> to reset your password.`,
+  });
 
   return { message: 'Password reset email sent' };
 };
+
+const refreshToken = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+    return { token: generateToken(user._id) };
+  };
 
 const resetPassword = async (token, newPassword) => {
   const hashedToken = crypto
@@ -95,6 +114,14 @@ const resetPassword = async (token, newPassword) => {
 
   return { message: 'Password reset successful' };
 };
+
+const logout = async (userId) => {
+    // Optionally invalidate the token on the server-side
+    // This could involve maintaining a blacklist of invalid tokens
+    // or updating a 'lastLogout' timestamp on the user document
+    await User.findByIdAndUpdate(userId, { lastLogout: new Date() });
+    return { message: 'Logged out successfully' };
+  };
 
 module.exports = {
   register,
