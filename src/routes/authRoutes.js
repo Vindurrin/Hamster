@@ -1,24 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
+const authController = require('../controllers/authController');
 
-// Placeholder route
-router.get('/', (req, res) => {
-  res.json({ message: 'Auth route placeholder' });
-});
-
-// Test route
-router.get('/test', async (req, res) => {
-  try {
-    const TestModel = mongoose.model('Test', new mongoose.Schema({ name: String }));
-    await TestModel.create({ name: 'test document' });
-    const docs = await TestModel.find();
-    res.json(docs);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-module.exports = router;
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.get('/verify-email/:token', authController.verifyEmail);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 
 module.exports = router;
