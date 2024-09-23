@@ -52,10 +52,31 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+const refreshToken = async(req, res, next) => {
+  try {
+    const result = await authService.refreshToken(req.user._id);
+    res.status(200).json(result);
+  } catch(error) {
+    next(error);
+  }
+};
+
+const logout = async(req, res, next) => {
+  try{
+    const result = await authService.logout(req.user._id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+
 module.exports = {
   register,
   login,
   verifyEmail,
   forgotPassword,
   resetPassword,
+  refreshToken,
+  logout
 };

@@ -47,7 +47,6 @@ const login = async (email, password) => {
 
   return { user, token: generateToken(user._id) };
 };
-
 const verifyEmail = async (token) => {
   const user = await User.findOne({ verificationToken: token });
   if (!user) {
@@ -91,7 +90,6 @@ const refreshToken = async (userId) => {
     }
     return { token: generateToken(user._id) };
   };
-
 const resetPassword = async (token, newPassword) => {
   const hashedToken = crypto
     .createHash('sha256')

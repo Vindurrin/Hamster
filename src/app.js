@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { logger, requestLogger } = require('./utils/logger');
 const { errorHandler } = require('./utils/errorHandler');
+const { authLimiter } = require('./middleware/rateLimiter');
+const { csrfProtection } = require('./middleware/csrf');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -18,6 +20,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
+app.use(csrfProtection);
+app.use('/api/auth', authLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
